@@ -45,7 +45,7 @@ public class Game {
             }
 
             // --- 2. TOUR DE CPU ---
-             ArrayList<Move> choices = cpuPlayer.getNextMoveMinMax(board);
+             ArrayList<Move> choices = cpuPlayer.getNextMoveAB(board);
 
             if (!choices.isEmpty()) {
                 // On mélange pour que CPU ne soit pas prévisible si plusieurs coups sont parfaits

@@ -66,8 +66,27 @@ class CPUPlayer
     // ont le même score.
     public ArrayList<Move> getNextMoveAB(Board board){
         numExploredNodes = 0;
-        return null;
+        ArrayList<Move> bestMoves = new ArrayList<>();
+        int maxScore = Integer.MIN_VALUE;
 
+        ArrayList<Move> possibleMoves = board.getAllPossiblesMoves();
+
+        for (Move m : possibleMoves) {
+            board.play(m, this.cpu);
+
+            // On appel de miniMax avec Alpha et Béta
+            int score = miniMax(board, getNextPlayer(this.cpu), Integer.MIN_VALUE, Integer.MAX_VALUE);
+            board.play(m, Mark.EMPTY);
+
+            if (score > maxScore) {
+                maxScore = score;
+                bestMoves.clear();
+                bestMoves.add(m);
+            } else if (score == maxScore) {
+                bestMoves.add(m);
+            }
+        }
+        return bestMoves;
     }
 
     // Retourne le joueur qui va joue maintenent
@@ -75,7 +94,7 @@ class CPUPlayer
         return (m == Mark.X) ? Mark.O : Mark.X;
     }
 
-    // retourne le score minimal ou maximal
+    // retourne le score minimal ou maximal : Minimax classique
     private int miniMax(Board board, Mark currentMark) {
         int maxScore,minScore, score;
         ArrayList<Move> listOfpossibleMoves;
@@ -108,6 +127,43 @@ class CPUPlayer
                 score = miniMax(board,this.getNextPlayer(currentMark));
                 minScore = Math.min(score,minScore);
                 board.play(m,Mark.EMPTY);
+            }
+            return minScore;
+        }
+    }
+
+    // Minimax avec elagage Alpha beta
+    public int miniMax(Board board, Mark currentMark, int alpha, int beta) {
+        numExploredNodes++;
+        int score = board.evaluate(this.cpu);
+
+        if (score == 100 || score == -100 || board.getAllPossiblesMoves().isEmpty()) {
+            return score;
+        }
+
+        ArrayList<Move> moves = board.getAllPossiblesMoves();
+        if (currentMark == this.cpu) {
+            int maxScore = Integer.MIN_VALUE;
+            for (Move m : moves) {
+                board.play(m, currentMark);
+                score = miniMax(board, getNextPlayer(currentMark), alpha, beta);
+                board.play(m, Mark.EMPTY);
+
+                maxScore = Math.max(maxScore, score);
+                alpha = Math.max(alpha, score);
+                if (beta <= alpha) break; // Élagage
+            }
+            return maxScore;
+        } else {
+            int minScore = Integer.MAX_VALUE;
+            for (Move m : moves) {
+                board.play(m, currentMark);
+                score = miniMax(board, getNextPlayer(currentMark), alpha, beta);
+                board.play(m, Mark.EMPTY);
+
+                minScore = Math.min(minScore, score);
+                beta = Math.min(beta, score);
+                if (beta <= alpha) break; // Élagage
             }
             return minScore;
         }
